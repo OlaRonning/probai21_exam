@@ -3,6 +3,22 @@ from torch import nn
 from torch.distributions import Normal, Bernoulli
 
 
+class MultiplicativeNormalizingFlow():
+    def fit(self, xtr, ytr):
+        pass
+
+    def transform(self, xte):
+        pass
+
+
+class SubtractedMultiplicativeNormalizingFlow():
+    def fit(self, xtr, ytr):
+        pass
+
+    def transform(self, xte):
+        pass
+
+
 class RealNVP(nn.Module):
     def __init__(self, in_features, hid_features, out_features):
         super(RealNVP, self).__init__()
