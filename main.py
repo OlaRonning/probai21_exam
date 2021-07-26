@@ -36,7 +36,7 @@ if __name__ == '__main__':
     elif args.method == 4:
         method = NoisyNaturalGradient()
     else:
-        raise KeyError('Method not implemented.')
+        raise KeyError(f'Method {args.method} not implemented.')
 
     data = load_data(args.dataset)
     method.fit(data.xtr, data.ytr)
