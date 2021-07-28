@@ -2,16 +2,20 @@ import argparse
 from collections import namedtuple
 from pathlib import Path
 
+import numpy as np
+from sklearn.model_selection import train_test_split
+
 from multiplicative_normalizing_flow import MultiplicativeNormalizingFlow, SubtractedMultiplicativeNormalizingFlow
 from noisy_natural_gradient import NoisyNaturalGradient
 
 DATADIR = Path('datasets')
-DataState = namedtuple('data', ['xtr', 'ytr', 'xte', 'yte'])
+DataState = namedtuple('data', ['xtr', 'xte', 'ytr', 'yte'])
 
 
 def load_data(name: str) -> DataState:
-    # TODO
-    return DataState(None, None, None, None)
+    data = np.loadtxt(DATADIR / f'{name}.txt')
+    x, y = data[:, :-1], data[:, -1]
+    return DataState(*train_test_split(x, y, train_size=.60))
 
 
 if __name__ == '__main__':
@@ -25,20 +29,21 @@ if __name__ == '__main__':
                                               'protein',
                                               'wine',
                                               'yacht',
-                                              'year_prediction_msd'])
-    parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]')
+                                              'year_prediction_msd'], default='wine')
+    parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]', default=2)
 
     args = parser.parse_args()
+    data = load_data(args.dataset)
+
     if args.method == 0:
         method = SubtractedMultiplicativeNormalizingFlow()
     elif args.method == 2:
-        method = MultiplicativeNormalizingFlow()
+        method = MultiplicativeNormalizingFlow(data.xtr.shape[-1], 50, 1)
     elif args.method == 4:
         method = NoisyNaturalGradient()
     else:
         raise KeyError(f'Method {args.method} not implemented.')
 
-    data = load_data(args.dataset)
     method.fit(data.xtr, data.ytr)
 
     ypred = method.transform(data.xte)

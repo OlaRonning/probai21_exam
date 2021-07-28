@@ -3,15 +3,20 @@ from torch import nn
 from torch.distributions import Normal, Bernoulli
 
 
-class MultiplicativeNormalizingFlow():
+class MultiplicativeNormalizingFlow:
+    def __init__(self, in_features, hid_features, out_features):
+        bijections = (
+            RealNVP(in_features, hid_features, hid_features), RealNVP(hid_features, hid_features, out_features))
+        self.flow = MNFLinear(in_features, out_features, bijections)
+
     def fit(self, xtr, ytr):
-        pass
+        print(self.flow.forward(xtr))
 
     def transform(self, xte):
         pass
 
 
-class SubtractedMultiplicativeNormalizingFlow():
+class SubtractedMultiplicativeNormalizingFlow:
     def fit(self, xtr, ytr):
         pass
 
@@ -59,7 +64,7 @@ class MNFLinear(nn.Module):
         self.linear = nn.Linear(in_features, out_features)
         self.act_func = nn.GELU()
         self.mean = torch.zeros((out_features, out_features), requires_grad=True)
-        self.variance = torch.tensor(torch.diag(out_features, out_features), requires_grad=True)
+        self.variance = torch.tensor(torch.eye(out_features), requires_grad=True)
         self.bijections = bijections
 
     @property
