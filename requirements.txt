@@ -1,3 +1,3 @@
-torch==1.9.0
-sklearn==0.0
-numpy==1.21.1
+version https://git-lfs.github.com/spec/v1
+oid sha256:6253b2c6fa1791b052997116021471731a3ee3cab42a2bc6b6f7d6d537b6bf40
+size 53
