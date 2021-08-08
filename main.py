@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
 
-from multiplicative_normalizing_flow import MultiplicativeNormalizingFlow
+from models import MultiplicativeNormalizingFlow
 from noisy_natural_gradient import NoisyNaturalGradient
 
 DATADIR = Path('datasets')
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     if args.method == 0:
         raise NotImplementedError
     elif args.method == 2:
-        method = MultiplicativeNormalizingFlow(data.xtr.shape[-1], 50, 1)
+        method = MultiplicativeNormalizingFlow(data.xtr.shape[-1], 50, 1, batch_size=100)
     elif args.method == 4:
         method = NoisyNaturalGradient()
     else:
