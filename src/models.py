@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
+import torch
 from torch.optim import Adam
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import trange
 
-from multiplicative_normalizing_flow import MNFFeedForwardNetwork
-from utils import Batch
+from mnf.multiplicative_normalizing_flow import MNFFeedForwardNetwork
 
 
 class MultiplicativeNormalizingFlow:
@@ -39,3 +39,23 @@ class MultiplicativeNormalizingFlow:
 
     def transform(self, xte):
         pass
+
+
+class NoisyNaturalGradient():
+    def fit(self, xtr, ytr):
+        pass
+
+    def transform(self, xte):
+        pass
+
+
+class Batch:
+    def __init__(self, data):
+        x, y = zip(*data)
+        self.x = torch.stack(x)
+        self.y = torch.stack(y)
+
+    def pin_memory(self):
+        self.x = self.x.pin_memory()
+        self.y = self.y.pin_memory()
+        return self

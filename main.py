@@ -7,8 +7,7 @@ import numpy as np
 import torch
 from sklearn.model_selection import train_test_split
 
-from models import MultiplicativeNormalizingFlow
-from noisy_natural_gradient import NoisyNaturalGradient
+from src.models import MultiplicativeNormalizingFlow, NoisyNaturalGradient
 
 DATADIR = Path('datasets')
 DataState = namedtuple('data', ['xtr', 'xte', 'ytr', 'yte'])
