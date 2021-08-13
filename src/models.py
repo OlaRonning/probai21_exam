@@ -4,11 +4,11 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import trange
 
-from mnf.multiplicative_normalizing_flow import MNFFeedForwardNetwork
+from src.mnf.multiplicative_normalizing_flow import MNFFeedForwardNetwork
 
 
 class MultiplicativeNormalizingFlow:
-    def __init__(self, in_channels, hid_forward_flow, hid_inv_flow, num_flows=2, num_epochs=200, optimizer=Adam,
+    def __init__(self, in_channels, hid_forward_flow, hid_inv_flow, num_flows=2, num_epochs=1000, optimizer=Adam,
                  batch_size=100):
         self.bnn = MNFFeedForwardNetwork(in_channels, hid_forward_flow, hid_inv_flow, num_flows)
         self.num_epochs = num_epochs

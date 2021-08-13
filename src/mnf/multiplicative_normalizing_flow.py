@@ -1,5 +1,3 @@
-import math
-
 import torch
 from torch import nn
 
@@ -28,10 +26,10 @@ class MNFFeedForwardNetwork(nn.Module):
         return x
 
     def log_likelihood(self, x, y):
-        return -.5 * torch.log(torch.tensor(2 * math.pi)) - .5 * (y - self(x)) ** 2
+        return torch.distributions.Normal(self(x).reshape(y.shape), 1.).log_prob(y)
 
     def loss(self, x, y):
-        return -(self.log_likelihood(x, y).sum() + sum(layer.kl_divergence() for layer in self.layers)).sum()
+        return -(self.log_likelihood(x, y) + sum(layer.kl_divergence() for layer in self.layers)).mean()
 
 
 def build_flows(in_channels, hidden_forward_channels, hidden_backward_channels, num_flows,
