@@ -14,6 +14,10 @@ class MultiplicativeNormalizingFlow:
         self.num_epochs = num_epochs
         self.optimizer = optimizer(self.bnn.parameters())
         self.batch_size = batch_size
+        self.debug = False
+
+    def __repr__(self):
+        return 'MNF'
 
     def fit(self, xtr, ytr):
         loader = DataLoader(TensorDataset(xtr, ytr), batch_size=self.batch_size, collate_fn=lambda b: Batch(b),
@@ -30,15 +34,16 @@ class MultiplicativeNormalizingFlow:
                 loss.backward()
                 self.optimizer.step()
                 cum_epoch_loss += loss
-                t.set_description(f'Loss:{epoch_loss} ({i + 1}/{num_batchs})', )
+                t.set_description(f'Loss:{epoch_loss:.2f} ({i + 1}/{num_batchs})', )
             epoch_loss = cum_epoch_loss
             losses.append(epoch_loss.detach().numpy())
-            t.set_description(f'Loss:{epoch_loss} ({i + 1}/{num_batchs})', )
-        plt.plot(losses)
-        plt.show()
+            t.set_description(f'Loss:{epoch_loss:.2f} ({i + 1}/{num_batchs})', )
+        if self.debug:
+            plt.plot(losses)
+            plt.show()
 
-    def transform(self, xte):
-        pass
+    def transform(self, x, num_samples=1):
+        return torch.stack(tuple(self.bnn(x) for _ in range(num_samples))).squeeze()
 
 
 class NoisyNaturalGradient():
