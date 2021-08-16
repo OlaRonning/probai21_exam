@@ -26,7 +26,7 @@ class MNFFeedForwardNetwork(nn.Module):
         return x
 
     def log_likelihood(self, x, y):
-        return torch.distributions.Normal(self(x).reshape(y.shape), .1).log_prob(y)
+        return torch.distributions.Normal(self(x).reshape(y.shape), .01).log_prob(y)
 
     def loss(self, x, y):
         return -(self.log_likelihood(x, y) + sum(layer.kl_divergence() for layer in self.layers)).mean()

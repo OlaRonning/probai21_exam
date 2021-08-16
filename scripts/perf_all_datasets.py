@@ -8,9 +8,10 @@ from src.models import MultiplicativeNormalizingFlow, NoisyNaturalGradient
 
 
 def print_row(i, table_length, dataset, method, yte, xte, file):
-    rmse_ = rmse(yte, method.transform(xte))
-    picp_ = picp(yte, method.transform(xte, 100))
-    mpiw_ = mpiw(method.transform(xte, 100))
+    y_sim = method.transform(xte, 100)
+    rmse_ = rmse(yte, y_sim.mean(0))
+    picp_ = picp(yte, y_sim)
+    mpiw_ = mpiw(y_sim)
     method_col = ''
     if i == 0:
         method_col = '\\multirow{%d}{*}{%s}' % (table_length, str(method))
