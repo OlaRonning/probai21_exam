@@ -4,7 +4,10 @@ from sys import stdout, stderr
 
 from src.data_pipeline import load_data
 from src.metrics import rmse, picp, mpiw
-from src.models import MultiplicativeNormalizingFlow, NoisyNaturalGradient
+from src.mnf.multiplicative_normalizing_flow import MSFFeedForwardNetwork, MNFFeedForwardNetwork
+from src.svi import SVI
+from src.nng.bayes_ffn import BFeedForwardNetwork
+from src.nng.optim import NoisyAdam
 
 
 def print_row(i, table_length, dataset, method, yte, xte, file):
@@ -20,6 +23,15 @@ def print_row(i, table_length, dataset, method, yte, xte, file):
           end=r'\\' + '\n', file=file)
 
 
+def get_batch_size(dataset):
+    batch_size = 1000
+    if dataset == 'year_prediction_msd':
+        batch_size = 70_000
+    elif dataset == 'protein':
+        batch_size = 10_000
+    return batch_size
+
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]', default=2)
@@ -27,16 +39,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    datasets = ['boston_housing',
-                'concrete',
-                'energy_heating_load',
-                'kin8nm',
-                'naval_compressor_decay',
-                'power',
-                'protein',
-                'wine',
-                'yacht',
-                'year_prediction_msd']
+    datasets = [  # 'year_prediction_msd',
+        'boston_housing',
+        'concrete',
+        'energy_heating_load',
+        'kin8nm',
+        'naval_compressor_decay',
+        'power',
+        'protein',
+        'wine',
+        'yacht',
+    ]
     if args.out_file == '':
         out_file = stdout
     else:
@@ -44,12 +57,14 @@ if __name__ == '__main__':
         table_dir.mkdir(exist_ok=True)
         out_file = (table_dir / args.out_file).open('w')
 
+    method = lambda model: SVI(model, batch_size=1000, num_epochs=1000)
     if args.method == 0:
-        raise NotImplementedError
+        bnn = lambda in_channels: MSFFeedForwardNetwork(in_channels, 50, 2)
     elif args.method == 2:
-        method = MultiplicativeNormalizingFlow
+        bnn = lambda in_channels: MNFFeedForwardNetwork(in_channels, 50, 100, 2)
     elif args.method == 4:
-        method = NoisyNaturalGradient()
+        bnn = lambda in_channels: BFeedForwardNetwork(in_channels)
+        method = lambda model: SVI(model, batch_size=1000, num_epochs=1000, optimizer=NoisyAdam)
     else:
         raise KeyError(f'Method {args.method} not implemented.')
     num_datasets = len(datasets)
@@ -57,6 +72,6 @@ if __name__ == '__main__':
     for i, dataset in enumerate(datasets):
         data = load_data(dataset)
         print(dataset, file=stderr)
-        method_ = method(data.xtr.shape[-1], 50, 1, batch_size=1000, num_epochs=10_000)
+        method_ = method(bnn(data.xtr.shape[-1]))
         method_.fit(data.xtr, data.ytr)
         print_row(i, num_datasets, dataset, method_, data.yte, data.xte, out_file)

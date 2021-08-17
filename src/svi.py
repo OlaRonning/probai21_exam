@@ -4,20 +4,17 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import trange
 
-from src.mnf.multiplicative_normalizing_flow import MNFFeedForwardNetwork
 
-
-class MultiplicativeNormalizingFlow:
-    def __init__(self, in_channels, hid_forward_flow, hid_inv_flow, num_flows=2, num_epochs=1000, optimizer=Adam,
-                 batch_size=100):
-        self.bnn = MNFFeedForwardNetwork(in_channels, hid_forward_flow, hid_inv_flow, num_flows)
+class SVI:
+    def __init__(self, bnn, num_epochs=1000, optimizer=Adam, batch_size=100):
+        self.bnn = bnn
         self.num_epochs = num_epochs
         self.optimizer = optimizer(self.bnn.parameters())
         self.batch_size = batch_size
-        self.debug = False
+        self.debug = True
 
     def __repr__(self):
-        return 'MNF'
+        return str(self.bnn)
 
     def fit(self, xtr, ytr):
         loader = DataLoader(TensorDataset(xtr, ytr), batch_size=self.batch_size, collate_fn=lambda b: Batch(b),
@@ -44,14 +41,6 @@ class MultiplicativeNormalizingFlow:
 
     def transform(self, x, num_samples=1):
         return torch.stack(tuple(self.bnn(x) for _ in range(num_samples))).squeeze()
-
-
-class NoisyNaturalGradient():
-    def fit(self, xtr, ytr):
-        pass
-
-    def transform(self, xte):
-        pass
 
 
 class Batch:

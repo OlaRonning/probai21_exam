@@ -3,7 +3,10 @@ from sys import stderr
 
 from src.data_pipeline import load_data
 from src.metrics import rmse, picp, mpiw
-from src.models import MultiplicativeNormalizingFlow, NoisyNaturalGradient
+from src.mnf.multiplicative_normalizing_flow import MNFFeedForwardNetwork, MSFFeedForwardNetwork
+from src.svi import SVI
+from src.nng.bayes_ffn import BFeedForwardNetwork
+from src.nng.optim import NoisyAdam
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -17,17 +20,22 @@ if __name__ == '__main__':
                                               'wine',
                                               'yacht',
                                               'year_prediction_msd'], default='wine')
-    parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]', default=2)
+    parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]', default=0)
 
     args = parser.parse_args()
     data = load_data(args.dataset)
 
+    in_channels = data.xtr.shape[-1]
+
     if args.method == 0:
-        raise NotImplementedError
+        bnn = MSFFeedForwardNetwork(in_channels, 50, 2)
+        method = SVI(bnn, batch_size=1000, num_epochs=1000)
     elif args.method == 2:
-        method = MultiplicativeNormalizingFlow(data.xtr.shape[-1], 50, 1, batch_size=1000, num_epochs=10_000)
+        bnn = MNFFeedForwardNetwork(in_channels, 50, 100, 2)
+        method = SVI(bnn, batch_size=1000, num_epochs=1000)
     elif args.method == 4:
-        method = NoisyNaturalGradient()
+        bnn = BFeedForwardNetwork(in_channels)
+        method = SVI(bnn, batch_size=1000, num_epochs=1000, optimizer=NoisyAdam)
     else:
         raise KeyError(f'Method {args.method} not implemented.')
 
