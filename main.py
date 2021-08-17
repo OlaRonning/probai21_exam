@@ -17,6 +17,7 @@ def get_batch_size(dataset):
         batch_size = 10_000
     return batch_size
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=['boston_housing',
@@ -30,7 +31,7 @@ if __name__ == '__main__':
                                               'yacht',
                                               'year_prediction_msd'], default='wine')
     parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]', default=0)
-    parser.add_argument('--verbose', type=bool, default=False)
+    parser.add_argument('--verbose', type=bool, default=True)
 
     args = parser.parse_args()
     data = load_data(args.dataset)

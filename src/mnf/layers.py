@@ -95,7 +95,7 @@ class MSFLayer(MNFLayer):
 
     def kl_divergence(self):
         aux, log_det_aux = self.push_forward(self._aux0, sample_mask=False)
-        log_prob_aux = self.base_dist.log_prob(self._aux0).sum() - log_det_aux
+        log_prob_aux = self.base_dist.log_prob(self._aux0).sum() + log_det_aux
 
         mean = self.mean.reshape((-1, self.in_channels, self.out_channels))
         variance = self.variance.reshape((-1, self.in_channels, self.out_channels))
@@ -103,9 +103,9 @@ class MSFLayer(MNFLayer):
         kl_qw_pw = variance + (aux.reshape((1, -1, 1)) * mean) ** 2 - torch.log(variance) - 1
 
         aux_back, log_det_aux_back = self.push_back(aux)
-        log_prob_aux_back = self.log_prob_aux_back(aux_back) - log_det_aux_back
+        log_prob_aux_back = self.base_dist.log_prob(aux_back).sum() + log_det_aux_back
 
-        return -.5 * kl_qw_pw.sum() + log_prob_aux_back.sum() + log_prob_aux.sum()  # TODO: double check sign
+        return -.5 * kl_qw_pw.sum() + log_prob_aux_back.sum() - log_prob_aux.sum()
 
     def push_back(self, aux, sample_mask=False):
         aux_back = aux
