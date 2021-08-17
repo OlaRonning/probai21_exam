@@ -58,7 +58,7 @@ if __name__ == '__main__':
     method.fit(data.xtr, data.ytr)
     y_sim = method.transform(data.xte, 100)
 
-    print(f'Method:{str(method)}, dataset:{args.dataset}, '
+    print(f'Method:{str(method)}({args.method}), dataset:{args.dataset}, '
           f'RMSE:{rmse(data.yte, y_sim.mean(0)):.2f}, '
           f'PICP:{picp(data.yte, y_sim):.2f}, '
           f'MPIW:{mpiw(y_sim)}')

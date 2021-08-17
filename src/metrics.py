@@ -17,8 +17,7 @@ def rmse(y_true, y_sim, **kwargs):
 
 def pi(y_sim, interval):
     """ Predictive Interval """
-    # TODO: may need to be exact
-    assert 0. <= interval <= 1.
+    assert 0. < interval <= 1.
     lower_bound = (1. - interval) / 2
     upper_bound = 1. - lower_bound
     lower_quantile, upper_quantile = np.quantile(y_sim, [lower_bound, upper_bound], axis=0)
