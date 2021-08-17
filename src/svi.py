@@ -6,12 +6,13 @@ from tqdm import trange
 
 
 class SVI:
-    def __init__(self, bnn, num_epochs=1000, optimizer=Adam, batch_size=100):
+    def __init__(self, bnn, num_epochs=1000, optimizer=Adam, batch_size=100, verbose=True):
         self.bnn = bnn
         self.num_epochs = num_epochs
         self.optimizer = optimizer(self.bnn.parameters())
         self.batch_size = batch_size
-        self.debug = True
+        self.debug = False
+        self.verbose = verbose
 
     def __repr__(self):
         return str(self.bnn)
@@ -22,7 +23,7 @@ class SVI:
 
         epoch_loss = float('inf')
         losses = []
-        for _ in (t := trange(self.num_epochs)):
+        for _ in (t := trange(self.num_epochs) if self.verbose else range(self.num_epochs)):
             cum_epoch_loss = 0.
             num_batchs = len(loader)
             for i, batch in enumerate(loader):
@@ -31,10 +32,12 @@ class SVI:
                 loss.backward()
                 self.optimizer.step()
                 cum_epoch_loss += loss
-                t.set_description(f'Loss:{epoch_loss:.2f} ({i + 1}/{num_batchs})', )
+                if self.verbose:
+                    t.set_description(f'Loss:{epoch_loss:.2f} ({i + 1}/{num_batchs})', )
             epoch_loss = cum_epoch_loss
             losses.append(epoch_loss.detach().numpy())
-            t.set_description(f'Loss:{epoch_loss:.2f} ({i + 1}/{num_batchs})', )
+            if self.verbose:
+                t.set_description(f'Loss:{epoch_loss:.2f} ({i + 1}/{num_batchs})', )
         if self.debug:
             plt.plot(losses)
             plt.show()

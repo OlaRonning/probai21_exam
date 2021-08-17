@@ -39,7 +39,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    datasets = [  # 'year_prediction_msd',
+    datasets = [
+        'year_prediction_msd',
         'boston_housing',
         'concrete',
         'energy_heating_load',
