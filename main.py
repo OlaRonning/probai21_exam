@@ -5,8 +5,7 @@ from src.data_pipeline import load_data
 from src.metrics import rmse, picp, mpiw
 from src.mnf.multiplicative_normalizing_flow import MNFFeedForwardNetwork, MSFFeedForwardNetwork
 from src.svi import SVI
-from src.nng.bayes_ffn import BFeedForwardNetwork
-from src.nng.optim import NoisyAdam
+from src.nng.noisy_adam import NoisyAdam
 
 
 def get_batch_size(dataset):
@@ -20,16 +19,16 @@ def get_batch_size(dataset):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', choices=['boston_housing',
-                                              'concrete',
-                                              'energy_heating_load',
-                                              'kin8nm',
-                                              'naval_compressor_decay',
-                                              'power',
-                                              'protein',
-                                              'wine',
-                                              'yacht',
-                                              'year_prediction_msd'], default='wine')
+    parser.add_argument('--dataset', choices=['boston_housing',  #
+                                              'concrete',  #
+                                              'energy_heating_load',  #
+                                              'kin8nm',  #
+                                              'naval_compressor_decay',  #
+                                              'power',  #
+                                              'protein',  #
+                                              'wine',  #
+                                              'yacht',  #
+                                              'year_prediction_msd'], default='year_prediction_msd')
     parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]', default=0)
     parser.add_argument('--verbose', type=bool, default=True)
 
@@ -48,8 +47,7 @@ if __name__ == '__main__':
         bnn = MNFFeedForwardNetwork(in_channels, 50, 100, 2)
         method = SVI(bnn, batch_size=batch_size, num_epochs=num_epochs, verbose=args.verbose)
     elif args.method == 4:
-        bnn = BFeedForwardNetwork(in_channels)
-        method = SVI(bnn, batch_size=batch_size, num_epochs=num_epochs, optimizer=NoisyAdam, verbose=args.verbose)
+        method = NoisyAdam(batch_size=batch_size, num_epochs=num_epochs)
     else:
         raise KeyError(f'Method {args.method} not implemented.')
 

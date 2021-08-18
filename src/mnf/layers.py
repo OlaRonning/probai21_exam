@@ -95,7 +95,7 @@ class MSFLayer(MNFLayer):
 
     def kl_divergence(self):
         aux, log_det_aux = self.push_forward(self._aux0, sample_mask=False)
-        log_prob_aux = self.base_dist.log_prob(self._aux0).sum() + log_det_aux
+        log_prob_aux = self.base_dist.log_prob(self._aux0).sum() - log_det_aux
 
         mean = self.mean.reshape((-1, self.in_channels, self.out_channels))
         variance = self.variance.reshape((-1, self.in_channels, self.out_channels))
