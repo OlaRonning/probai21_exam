@@ -39,6 +39,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     datasets = [
+        'year_prediction_msd',
         'boston_housing',
         'concrete',
         'energy_heating_load',
@@ -48,7 +49,6 @@ if __name__ == '__main__':
         'protein',
         'wine',
         'yacht',
-        'year_prediction_msd',
     ]
     if args.out_file == '':
         out_file = stdout
@@ -57,14 +57,16 @@ if __name__ == '__main__':
         table_dir.mkdir(exist_ok=True)
         out_file = (table_dir / args.out_file).open('w')
 
-    method = lambda model, batch_size: SVI(model, batch_size=batch_size, num_epochs=2000)
+    num_epochs = 2000
+
+    method = lambda model, batch_size: SVI(model, batch_size=batch_size, num_epochs=num_epochs)
     if args.method == 0:
         bnn = lambda in_channels: MSFFeedForwardNetwork(in_channels, 50, 2)
     elif args.method == 2:
         bnn = lambda in_channels: MNFFeedForwardNetwork(in_channels, 50, 100, 2)
     elif args.method == 4:
         bnn = lambda _: None
-        method = lambda _, batch_size: NoisyAdam(batch_size=batch_size, num_epochs=2000)
+        method = lambda _, batch_size: NoisyAdam(batch_size=batch_size, num_epochs=num_epochs)
     else:
         raise KeyError(f'Method {args.method} not implemented.')
     num_datasets = len(datasets)

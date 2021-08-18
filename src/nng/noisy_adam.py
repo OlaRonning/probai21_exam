@@ -21,7 +21,7 @@ def log_likelihood(x, y, weights, shapes):
 
 
 class NoisyAdam:
-    def __init__(self, num_epochs, lr=.01, beta1=.9, beta2=.999, kl_weight=10., pvar=.1, damping_ex=.1, verbose=True,
+    def __init__(self, num_epochs, lr=.01, beta1=.9, beta2=.999, kl_weight=1., pvar=.1, damping_ex=.1, verbose=True,
                  batch_size=1000):
         self.num_epochs = num_epochs
         self.lr = lr
@@ -39,6 +39,9 @@ class NoisyAdam:
         self._n = None
         self._damping_in = None
 
+    def __repr__(self):
+        return 'NNG'
+
     def fit(self, xtr, ytr):
         n, m = xtr.shape
         loader = DataLoader(TensorDataset(xtr, ytr), batch_size=self.batch_size, collate_fn=lambda b: Batch(b),
@@ -52,7 +55,7 @@ class NoisyAdam:
             torch.Size((8,)), torch.Size((8, 1)), torch.Size((1,)))
         self._shapes = shapes
         self._n = n
-        mus = torch.cat(tuple(torch.zeros(s.numel()) for s in shapes))
+        mus = torch.cat(tuple(torch.ones(s.numel()) for s in shapes))
         fs = .001 * torch.cat(tuple(torch.ones(s.numel()) for s in shapes))
         m = 0.
         epoch_loss = float('inf')
