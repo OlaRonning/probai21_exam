@@ -5,9 +5,8 @@ from sys import stdout, stderr
 from src.data_pipeline import load_data
 from src.metrics import rmse, picp, mpiw
 from src.mnf.multiplicative_normalizing_flow import MSFFeedForwardNetwork, MNFFeedForwardNetwork
+from src.nng.noisy_adam import NoisyAdam
 from src.svi import SVI
-from src.nng.bayes_ffn import BFeedForwardNetwork
-from src.nng.optim import NoisyAdam
 
 
 def print_row(i, table_length, dataset, method, yte, xte, file):
@@ -34,13 +33,12 @@ def get_batch_size(dataset):
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]', default=2)
-    parser.add_argument('--out_file', type=str, default='nmf_perf.tex')
+    parser.add_argument('--method', type=int, choices=range(5), metavar='[0-4]', default=4)
+    parser.add_argument('--out_file', type=str, default='nng_perf.tex')
 
     args = parser.parse_args()
 
     datasets = [
-        'year_prediction_msd',
         'boston_housing',
         'concrete',
         'energy_heating_load',
@@ -50,6 +48,7 @@ if __name__ == '__main__':
         'protein',
         'wine',
         'yacht',
+        'year_prediction_msd',
     ]
     if args.out_file == '':
         out_file = stdout
@@ -58,14 +57,14 @@ if __name__ == '__main__':
         table_dir.mkdir(exist_ok=True)
         out_file = (table_dir / args.out_file).open('w')
 
-    method = lambda model: SVI(model, batch_size=1000, num_epochs=1000)
+    method = lambda model, batch_size: SVI(model, batch_size=batch_size, num_epochs=2000)
     if args.method == 0:
         bnn = lambda in_channels: MSFFeedForwardNetwork(in_channels, 50, 2)
     elif args.method == 2:
         bnn = lambda in_channels: MNFFeedForwardNetwork(in_channels, 50, 100, 2)
     elif args.method == 4:
-        bnn = lambda in_channels: BFeedForwardNetwork(in_channels)
-        method = lambda model: SVI(model, batch_size=1000, num_epochs=1000, optimizer=NoisyAdam)
+        bnn = lambda _: None
+        method = lambda _, batch_size: NoisyAdam(batch_size=batch_size, num_epochs=2000)
     else:
         raise KeyError(f'Method {args.method} not implemented.')
     num_datasets = len(datasets)
@@ -73,6 +72,6 @@ if __name__ == '__main__':
     for i, dataset in enumerate(datasets):
         data = load_data(dataset)
         print(dataset, file=stderr)
-        method_ = method(bnn(data.xtr.shape[-1]))
+        method_ = method(bnn(data.xtr.shape[-1]), get_batch_size(dataset))
         method_.fit(data.xtr, data.ytr)
         print_row(i, num_datasets, dataset, method_, data.yte, data.xte, out_file)
